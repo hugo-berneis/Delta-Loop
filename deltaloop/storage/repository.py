@@ -55,6 +55,15 @@ class Repository:
         await self._session.refresh(trace)
         return trace
 
+    async def get_all_traces(self) -> list[ReasoningTrace]:
+        result = await self._session.execute(select(ReasoningTrace))
+        return list(result.scalars().all())
+
+    async def get_iteration_numbers(self) -> list[int]:
+        """Return sorted list of distinct iteration numbers that have traces."""
+        result = await self._session.execute(select(ReasoningTrace.iteration).distinct())
+        return sorted(int(r) for r in result.scalars().all())
+
     async def get_traces_for_iteration(self, iteration: int) -> list[ReasoningTrace]:
         result = await self._session.execute(
             select(ReasoningTrace).where(ReasoningTrace.iteration == iteration)
@@ -110,5 +119,10 @@ class Repository:
         await self._session.commit()
 
 
-def get_session() -> AsyncSession:
-    return _AsyncSession()
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def get_session():
+    async with _AsyncSession() as session:
+        yield session
