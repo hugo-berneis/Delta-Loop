@@ -148,12 +148,21 @@ async def reason(state: AgentState) -> dict:
     steps = state.get("reasoning_steps", [])
 
     with logger.contextualize(node="reason", task_id=task.id):
+        completed_calls = [
+            tc for tc in state.get("tool_calls", [])
+            if not tc.get("pending") and "name" in tc
+        ]
+        tool_history = "\n".join(
+            f"- {tc['name']}: {tc.get('result', '')[:120]}" for tc in completed_calls
+        ) or "(none)"
+
         prompt = REASON_PROMPT.format(
             question=task.question,
             context_type=task.context_type,
             reasoning_steps="\n".join(f"- {s}" for s in steps) or "(none yet)",
             retrieved_context=state.get("retrieved_context", "") or "(none)",
             multimodal_output=state.get("multimodal_output", "") or "(none)",
+            tool_history=tool_history,
         )
 
         raw = await client.complete(

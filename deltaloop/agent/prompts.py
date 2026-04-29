@@ -31,6 +31,9 @@ RETRIEVED CONTEXT:
 MULTIMODAL OUTPUT:
 {multimodal_output}
 
+TOOLS ALREADY CALLED (do NOT repeat a tool that already returned an error):
+{tool_history}
+
 AVAILABLE TOOLS: search_document, describe_image, navigate_page
 
 Decide your next action. Respond ONLY with valid JSON:
@@ -42,7 +45,8 @@ Decide your next action. Respond ONLY with valid JSON:
   "ready_to_answer": true or false
 }}
 
-Set ready_to_answer to true only when you have enough information to give a final answer."""
+Set ready_to_answer to true only when you have enough information to give a final answer.
+If a tool already failed or returned an error, do not call it again — set ready_to_answer to true instead."""
 
 REASON_PROMPT_STRICT = """IMPORTANT: Respond ONLY with a JSON object, no other text.
 

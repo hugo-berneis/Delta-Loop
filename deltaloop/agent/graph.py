@@ -17,8 +17,14 @@ def _route_after_context(state: AgentState) -> str:
     return "reason"
 
 
+_MAX_TOOL_CALLS = 4
+
+
 def _route_after_reason(state: AgentState) -> str:
     tool_calls = state.get("tool_calls", [])
+    completed = sum(1 for tc in tool_calls if not tc.get("pending") and "name" in tc)
+    if completed >= _MAX_TOOL_CALLS:
+        return "synthesize"
     if tool_calls and tool_calls[-1].get("pending"):
         return "call_tool"
     return "synthesize"
